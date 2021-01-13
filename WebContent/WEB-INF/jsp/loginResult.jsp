@@ -2,7 +2,7 @@
     pageEncoding="UTF-8"%>
 <%@ page import="model.User" %>
 <%
-	User user = (User)session.getAttribute("user");
+	User loginUser = (User)session.getAttribute("loginUser");
 %>
 <!DOCTYPE html>
 <html>
@@ -11,9 +11,9 @@
 <title>Insert title here</title>
 </head>
 <body>
-<%if(user != null){ %>
+<%if(loginUser != null){ %>
 	<p>ログインに成功しました</p>
-	<p>ようこそ<%= user.getName() %>さん</p>
+	<p>ようこそ<%= loginUser.getName() %>さん</p>
 	<a href="/docoTsubu/Main">つぶやきの投稿・閲覧へ</a>
 <%}else{ %>
 	<p>ログインに失敗しました</p>

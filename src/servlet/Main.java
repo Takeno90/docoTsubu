@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import model.Mutter;
+import model.PostMutterLogic;
 import model.User;
 
 /**
@@ -36,24 +37,26 @@ public class Main extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		request.setCharacterEncoding("UTF-8");
+		//つぶやきリストをアプリケーションスコープから取得
+		ServletContext application = this.getServletContext();
+		List<Mutter> mutterList =  (List<Mutter>) application.getAttribute("mutterList");
+
+		//もしmutterListがなければ、インスタンスを作りアプリケーションスコープに保存
+		if(mutterList == null) {
+			mutterList = new ArrayList<>();
+			application.setAttribute("mutterList", mutterList);
+		}
+
 		HttpSession session = request.getSession();
-		User user = (User) session.getAttribute("user");
+		User loginUser = (User)session.getAttribute("loginUser");
 
-		if (user != null) {
-			//Mutterインスタンスのリストに代入
-			List<Mutter> mutterList = new ArrayList<>();
-			Mutter mutter = new Mutter(user.getName());
-			mutterList.add(mutter);
-
-			ServletContext application = this.getServletContext();
-			application.setAttribute("mutter", mutterList);
-
+		if (loginUser == null) {
+			response.sendRedirect("/docoTsubu/");
+		} else {
 			RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/main.jsp");
 			dispatcher.forward(request, response);
-		} else {
-			response.sendRedirect("/docoTsubu/");
 		}
+
 
 	}
 
@@ -62,8 +65,37 @@ public class Main extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
+		//リクエストパラメータ
+		request.setCharacterEncoding("UTF-8");
+		String text = request.getParameter("text");
+
+		//入力チェック
+		if(text != null && text.length() != 0) {
+			//リストの取得
+			ServletContext application = this.getServletContext();
+			List<Mutter> mutterList = (List<Mutter>) application.getAttribute("mutterList");
+
+			//セッションスコープ
+			HttpSession session = request.getSession();
+			User loginUser = (User) session.getAttribute("loginUser");
+
+			//Mutterクラスのインスタンス
+			Mutter mutter = new Mutter(loginUser.getName(),text);
+
+			//Mutterクラスをリストに保存
+			PostMutterLogic postMutterLogic = new PostMutterLogic();
+			postMutterLogic.execute(mutter,mutterList);
+
+			//アプリケーションスコープへ保存
+			application.setAttribute("mutterList", mutterList);
+		}else {
+			//エラーメッセージ
+			request.setAttribute("errorMsg", "入力されていません");
+		}
+		//フォワード
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/main.jsp");
+		dispatcher.forward(request, response);
+
 	}
 
 }

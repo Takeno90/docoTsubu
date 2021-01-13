@@ -7,5 +7,6 @@ public class LoginLogic {
 		}else {
 			return false;
 		}
+
 	}
 }
