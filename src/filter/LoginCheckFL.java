@@ -47,7 +47,7 @@ public class LoginCheckFL implements Filter {
 		HttpServletResponse res = (HttpServletResponse)response;
 		HttpSession session = req.getSession();
 
-		if(session.getAttribute("loginUserr") == null) {
+		if(session.getAttribute("loginUser") == null) {
 			System.out.println("→不正ログインのため、トップ画面にリダイレクト");
 			res.sendRedirect("/docoTsubu/");
 			return; //フィルタ-を通過させない!
